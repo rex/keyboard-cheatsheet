@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QMK/VIA Keyboard Cheat Sheet</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>🎹 QMK/VIA Keyboard Cheat Sheet</h1>
+            <p>Import your VIA configuration and generate a printable reference</p>
+        </header>
+
+        <div class="import-section">
+            <div class="import-box">
+                <h3>1. Import Keyboard Definition (VIA JSON)</h3>
+                <p>This defines your keyboard's physical layout. Usually found in the VIA keyboards repo.</p>
+                <input type="file" id="layout-file" accept=".json">
+                <button onclick="loadDefaultDropAltV2()">Use Drop Alt v2 Default</button>
+            </div>
+            <div class="import-box">
+                <h3>2. Import Keymap (VIA Backup)</h3>
+                <p>This contains your actual key assignments. Export from VIA app: File → Save Current Keymap</p>
+                <input type="file" id="keymap-file" accept=".json">
+            </div>
+        </div>
+
+        <div class="keyboard-info" id="keyboard-info" style="display: none;">
+            <h2 id="keyboard-name">Keyboard</h2>
+            <div class="layer-tabs" id="layer-tabs"></div>
+        </div>
+
+        <div class="keyboard-container" id="keyboard-container">
+            <div class="placeholder">
+                <p>Import files above to see your keyboard layout</p>
+            </div>
+        </div>
+
+        <div class="actions" id="actions" style="display: none;">
+            <button onclick="togglePrintMode()" class="btn-primary">📄 Generate Printable Cheat Sheet</button>
+            <button onclick="exportSVG()">💾 Export as SVG</button>
+        </div>
+
+        <div class="cheat-sheet-container" id="cheat-sheet-container" style="display: none;">
+            <div class="cheat-sheet" id="cheat-sheet"></div>
+        </div>
+    </div>
+
+    <!-- Print Styles Container -->
+    <div id="print-area" class="print-area"></div>
+
+    <script src="keycodes.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
