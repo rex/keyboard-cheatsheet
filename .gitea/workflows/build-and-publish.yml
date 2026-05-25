@@ -148,7 +148,8 @@ jobs:
             BUILD_DATE=${{ steps.build_meta.outputs.app_build_date }}
             GITHUB_SHA=${{ steps.build_meta.outputs.app_git_sha }}
             APP_VERSION=${{ steps.build_meta.outputs.app_version }}
-            APP_GIT_SHA=${{ steps.build_meta.outputs.app_git_sha_short }}
+            APP_GIT_SHA=${{ steps.build_meta.outputs.app_git_sha }}
+            APP_VERSION_FULL=${{ steps.build_meta.outputs.app_version }}-${{ steps.build_meta.outputs.app_git_sha_short }}
             APP_BUILD_DATE=${{ steps.build_meta.outputs.app_build_date }}
           provenance: false
           sbom: false

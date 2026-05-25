@@ -1,4 +1,14 @@
 FROM nginx:alpine
+
+ARG APP_VERSION
+ARG APP_GIT_SHA
+ARG APP_VERSION_FULL
+ARG APP_BUILD_DATE
+ENV APP_VERSION=${APP_VERSION} \
+    APP_GIT_SHA=${APP_GIT_SHA} \
+    APP_VERSION_FULL=${APP_VERSION_FULL} \
+    APP_BUILD_DATE=${APP_BUILD_DATE}
+
 RUN apk add --no-cache curl
 COPY . /usr/share/nginx/html/
 # Remove non-web files
