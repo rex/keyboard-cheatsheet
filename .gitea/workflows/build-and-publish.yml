@@ -127,6 +127,9 @@ jobs:
           username: ${{ steps.registry_auth.outputs.registry_user }}
           password: ${{ steps.registry_auth.outputs.registry_token }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -151,6 +154,8 @@ jobs:
             APP_GIT_SHA=${{ steps.build_meta.outputs.app_git_sha }}
             APP_VERSION_FULL=${{ steps.build_meta.outputs.app_version }}-${{ steps.build_meta.outputs.app_git_sha_short }}
             APP_BUILD_DATE=${{ steps.build_meta.outputs.app_build_date }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
           provenance: false
           sbom: false
 
