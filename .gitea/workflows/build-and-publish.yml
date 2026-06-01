@@ -4,17 +4,6 @@ on:
   push:
     branches: ["main"]
   workflow_dispatch:
-    inputs:
-      bump_level:
-        description: "Semantic version bump level"
-        required: false
-        default: "auto"
-        type: choice
-        options:
-          - auto
-          - patch
-          - minor
-          - major
 
 env:
   REGISTRY: git.thelab.host
@@ -27,7 +16,7 @@ jobs:
   build-and-push:
     runs-on: ubuntu-24.04
     permissions:
-      contents: write
+      contents: read
       packages: write
 
     concurrency:
@@ -37,74 +26,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Resolve bump level
-        id: resolve_bump
-        if: github.ref == 'refs/heads/main'
-        run: |
-          set -euo pipefail
-
-          BUMP_INPUT="${{ github.event.inputs.bump_level || 'auto' }}"
-          if [[ "$BUMP_INPUT" != "auto" ]]; then
-            {
-              echo "bump_level=$BUMP_INPUT"
-              echo "bump_reason=manual_input"
-              echo "bump_range=manual"
-            } >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            BEFORE="${{ github.event.before }}"
-            AFTER="${{ github.sha }}"
-            if [[ -n "$BEFORE" && "$BEFORE" != "0000000000000000000000000000000000000000" ]]; then
-              RANGE="${BEFORE}..${AFTER}"
-            else
-              RANGE="${AFTER}"
-            fi
-          else
-            RANGE="HEAD"
-          fi
-
-          python3 scripts/ci-version.py resolve-bump --range "$RANGE" > /tmp/bump-level.env
-          cat /tmp/bump-level.env
-          cat /tmp/bump-level.env >> "$GITHUB_OUTPUT"
-
-      - name: Bump version and push tag
-        id: tag_version
-        if: github.ref == 'refs/heads/main'
-        run: |
-          set -euo pipefail
-          git config --local user.email "action@gitea.local"
-          git config --local user.name "Gitea Action"
-
-          BUMP_LEVEL="${{ steps.resolve_bump.outputs.bump_level || 'patch' }}"
-          python3 scripts/ci-version.py bump --level "$BUMP_LEVEL" --write > /tmp/version.env
-          cat /tmp/version.env
-          cat /tmp/version.env >> "$GITHUB_OUTPUT"
-
-          source /tmp/version.env
-          git add "$version_source_path"
-          git commit -m "chore(release): bump version to $tag [skip ci]"
-
-          git push origin HEAD:main
-          if ! git rev-parse "$tag" >/dev/null 2>&1; then
-            git tag "$tag"
-          fi
-          git push origin "$tag"
 
       - name: Resolve build metadata
         id: build_meta
         run: |
           set -euo pipefail
-          VERSION_OVERRIDE="${{ steps.tag_version.outputs.new_version }}"
-          if [[ -n "$VERSION_OVERRIDE" ]]; then
-            python3 scripts/ci-version.py metadata --version "$VERSION_OVERRIDE" > /tmp/build-meta.env
-          else
-            python3 scripts/ci-version.py metadata > /tmp/build-meta.env
-          fi
+          python3 scripts/ci-version.py metadata > /tmp/build-meta.env
           cat /tmp/build-meta.env
           cat /tmp/build-meta.env >> "$GITHUB_OUTPUT"
 
@@ -172,7 +99,5 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Version:** ${{ steps.build_meta.outputs.app_version }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Semver Bump:** ${{ steps.resolve_bump.outputs.bump_level || 'patch' }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Bump Reason:** ${{ steps.resolve_bump.outputs.bump_reason || 'default:patch' }}" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** ${{ steps.build_meta.outputs.app_git_sha_short }}" >> $GITHUB_STEP_SUMMARY
           echo "**Build Date (UTC):** ${{ steps.build_meta.outputs.app_build_date }}" >> $GITHUB_STEP_SUMMARY
